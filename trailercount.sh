@@ -9,15 +9,15 @@ do
  echo "$line"
 
  #check for blank lines
- if [[ $line == '' ]]
+ if [[ -z "$line" ]]
  then 
    continue
  fi
 
  #check for Trailer keyword
- if [[ $line == "TRAILER"* ]]
+ if [[ `echo "$line" | cut -d "(" -f2 | cut -d ")" -f1 | cut -d " " -f 2-4` == "Rows Selected" ]]
  then
-   tailcount=$(( `echo "$line" | cut -d '|' -f2` ))
+   tailcount=$(( `echo "$line" | cut -d "(" -f2 | cut -d ")" -f1 | cut -d " " -f1` ))
  else
    rowcount=$((rowcount+1))
  fi
