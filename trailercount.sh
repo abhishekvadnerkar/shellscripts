@@ -1,34 +1,21 @@
 #!/bin/bash
-
-#Initialize counters
-rowcount=-1
-tailcount=0 
-
-while read line
-do
- echo "$line"
-
- #check for blank lines
- if [[ -z "$line" ]]
- then 
-   continue
- fi
-
- #check for Trailer keyword
- if [[ `echo "$line" | cut -d "(" -f2 | cut -d ")" -f1 | cut -d " " -f 2-4` == "Rows Selected" ]]
- then
-   tailcount=$(( `echo "$line" | cut -d "(" -f2 | cut -d ")" -f1 | cut -d " " -f1` ))
- else
-   rowcount=$((rowcount+1))
- fi
-
-done < $1
-echo "Data count is: $rowcount lines"
-echo "Tail count is: $tailcount lines"
-echo
-if [[ $rowcount == $tailcount ]]
+file=$1
+bklocation=/HealthPlan_Files/Incoming_Files/HealthFirst/TrailerRecordRemoved
+cp -p $file $bklocation
+filename=$(basename $file)
+bkp_file=$bklocation/$filename
+out="output"
+rcount=0
+trailer=0
+rcount=`cat $bkp_file |sed '/^[[:space:]]*$/d' | sed '/^$/d'| wc -l`
+trailer=`cat $bkp_file |sed '/^[[:space:]]*$/d' | sed '/^$/d'|tail -n 1| cut -d "(" -f2 | cut -d ")" -f1 | cut -d " " -f1`
+rcount=$((rcount-1))
+#echo "Row count minus header and trailer is: $rcount"
+#echo "Trailer count is : $trailer"
+if [[ $rcount == $trailer ]]
 then
-  echo "Row & Tail count match.Processing file....."
+   out=$bklocation
+   sed -i '$d' $bkp_file
 else
-  echo "Row & Tail count mis-match. Error!!!"
+   out="false"
 fi
